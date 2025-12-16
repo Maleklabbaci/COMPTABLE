@@ -46,15 +46,15 @@ const App: React.FC = () => {
     setTransactions(loadedTransactions);
 
     // 2. Manage Splash Screen Logic
-    // Wait 2.5s before fading out
+    // Start fading out after 2 seconds
     const fadeTimer = setTimeout(() => {
       setSplashFading(true);
-    }, 2500);
+    }, 2000);
 
-    // Remove from DOM after transition (2.5s + 0.7s transition)
+    // Remove completely after fade transition (2s + 0.7s)
     const removeTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 3200);
+    }, 2700);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -97,11 +97,11 @@ const App: React.FC = () => {
       {/* Splash Screen Overlay */}
       {showSplash && (
         <div 
-          className={`fixed inset-0 z-[9999] bg-white w-screen h-screen flex flex-col items-center justify-center transition-all duration-700 ease-in-out ${
-            splashFading ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out ${
+            splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
-          <div className="flex flex-col items-center p-6 text-center animate-slide-down">
+          <div className="flex flex-col items-center p-6 text-center">
             {/* Logo Icon */}
             <div className="w-24 h-24 bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20 mb-6 rotate-3">
                <Eye size={48} className="text-white" strokeWidth={2} />
@@ -112,7 +112,7 @@ const App: React.FC = () => {
               IVISION <span className="text-blue-600 block md:inline">AGENCY</span>
             </h1>
             
-            {/* Loading Indicator */}
+            {/* Simple Loading Indicator */}
             <div className="mt-8 flex gap-3">
               <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
               <span className="w-3 h-3 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
