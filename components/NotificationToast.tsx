@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { X, CheckCircle, Sparkles, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface NotificationToastProps {
   message: string;
-  type: 'success' | 'error' | 'ai';
+  type: 'success' | 'error';
   onClose: () => void;
 }
 
@@ -25,12 +25,6 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ message, type, on
       border: 'border-rose-100', 
       text: 'text-rose-900',
       icon: <AlertCircle className="text-rose-500" size={24} /> 
-    },
-    ai: { 
-      bg: 'bg-indigo-50', 
-      border: 'border-indigo-100', 
-      text: 'text-indigo-900',
-      icon: <Sparkles className="text-indigo-500" size={24} /> 
     }
   };
 
@@ -44,7 +38,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ message, type, on
         </div>
         <div className="flex-1">
           <h4 className={`font-bold ${style.text} text-sm mb-1`}>
-            {type === 'ai' ? 'Vision IA' : type === 'error' ? 'Erreur' : 'Succès'}
+            {type === 'error' ? 'Erreur' : 'Succès'}
           </h4>
           <p className="text-slate-600 text-sm font-medium leading-relaxed">{message}</p>
         </div>
