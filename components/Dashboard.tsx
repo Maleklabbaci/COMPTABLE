@@ -8,11 +8,12 @@ import { TrendingUp, TrendingDown, Wallet, PieChart as PieChartIcon, Moon, Sun }
 
 interface DashboardProps {
   transactions: Transaction[];
+  highlightNewData?: boolean;
 }
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#10b981', '#f59e0b', '#64748b'];
 
-const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
+const Dashboard: React.FC<DashboardProps> = ({ transactions, highlightNewData }) => {
   const [darkMode, setDarkMode] = useState(false);
 
   // Theme Constants
@@ -157,23 +158,25 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
 
       {/* --- KPI Cards --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 relative overflow-hidden transition-colors duration-300`}>
+        {/* Balance Card - The main KPI to highlight */}
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 relative overflow-hidden transition-all duration-700 ease-out ${highlightNewData ? 'ring-4 ring-indigo-500/30 scale-[1.02] shadow-xl shadow-indigo-200' : ''}`}>
           <div className="absolute right-0 top-0 p-4 opacity-5">
             <Wallet size={100} className={darkMode ? 'text-white' : 'text-black'} />
           </div>
-          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'} transition-transform duration-700 ${highlightNewData ? 'scale-110 rotate-3' : ''}`}>
             <Wallet size={28} />
           </div>
           <div className="relative z-10">
             <p className={`${theme.textSub} text-xs font-bold uppercase tracking-wider mb-1`}>Solde Net</p>
-            <h3 className={`text-2xl font-black ${stats.balance >= 0 ? theme.textMain : 'text-rose-500'}`}>
+            <h3 className={`text-2xl font-black ${stats.balance >= 0 ? theme.textMain : 'text-rose-500'} transition-all duration-500`}>
               {formatCurrency(stats.balance)} <span className="text-sm font-bold text-slate-500">DA</span>
             </h3>
           </div>
         </div>
 
-        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-colors duration-300`}>
-          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+        {/* Income Card */}
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-all duration-700 ease-out ${highlightNewData ? 'ring-4 ring-emerald-500/30 scale-[1.02] shadow-xl shadow-emerald-200 delay-75' : ''}`}>
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'} transition-transform duration-700 ${highlightNewData ? 'scale-110' : ''}`}>
             <TrendingUp size={28} />
           </div>
           <div>
@@ -184,8 +187,9 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
           </div>
         </div>
 
-        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-colors duration-300`}>
-          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'}`}>
+        {/* Expense Card */}
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-all duration-700 ease-out ${highlightNewData ? 'ring-4 ring-rose-500/30 scale-[1.02] shadow-xl shadow-rose-200 delay-100' : ''}`}>
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'} transition-transform duration-700 ${highlightNewData ? 'scale-110' : ''}`}>
             <TrendingDown size={28} />
           </div>
           <div>

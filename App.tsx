@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import NotificationToast from './components/NotificationToast'; // Import Notification
 import { Transaction } from './types';
 import { getTransactions, saveTransaction } from './services/storageService';
-import { LayoutDashboard, PlusCircle, History, Eye, Search } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, History, Eye, Search, ArrowRight, ChevronDown, LayoutGrid } from 'lucide-react';
 
 enum View {
   DASHBOARD = 'DASHBOARD',
@@ -22,6 +22,10 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.NEW_TRANSACTION);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [notification, setNotification] = useState<NotificationState>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(true);
+  
+  // State to trigger animation on dashboard
+  const [highlightDashboard, setHighlightDashboard] = useState(false);
 
   // Helper to show notifications
   const showNotification = (message: string, type: 'success' | 'error') => {
@@ -42,8 +46,12 @@ const App: React.FC = () => {
     
     // 2. Move to Dashboard immediately for better UX
     setCurrentView(View.DASHBOARD);
+    
+    // 3. Trigger Dashboard Animation
+    setHighlightDashboard(true);
+    setTimeout(() => setHighlightDashboard(false), 2000); // Reset animation state after 2s
 
-    // 3. Notify user
+    // 4. Notify user
     showNotification("Transaction enregistrée avec succès.", "success");
   };
 
@@ -66,11 +74,11 @@ const App: React.FC = () => {
       )}
 
       {/* Desktop Sidebar Navigation (Hidden on Mobile) */}
-      <aside className="hidden md:flex w-72 bg-[#0F172A] text-white flex-shrink-0 flex-col sticky top-0 h-screen z-50 shadow-2xl shadow-slate-900/50">
+      <aside className="hidden md:flex w-80 bg-[#0F172A] text-white flex-shrink-0 flex-col sticky top-0 h-screen z-50 shadow-2xl shadow-slate-900/50 border-r border-white/5">
         <div className="p-8 flex items-center gap-4 mb-2">
-          <div className="relative">
-            <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-40"></div>
-            <div className="relative bg-[#1E293B] p-3 rounded-2xl shadow-inner border border-white/10">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            <div className="relative bg-[#1E293B] p-3 rounded-2xl shadow-inner border border-white/10 group-hover:scale-105 transition-transform">
               <Eye size={28} className="text-white" strokeWidth={2} />
             </div>
           </div>
@@ -80,56 +88,114 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <nav className="flex-1 px-6 space-y-3">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 ml-2">Menu Principal</div>
+        <nav className="flex-1 px-6 space-y-4">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 ml-1">Menu Principal</div>
           
+          {/* Card Button: Nouvelle Opération */}
           <button
             onClick={() => setCurrentView(View.NEW_TRANSACTION)}
-            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
+            className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
               currentView === View.NEW_TRANSACTION 
-                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
+                : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
             }`}
           >
-            <PlusCircle size={22} className={currentView === View.NEW_TRANSACTION ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
-            <span className="font-semibold tracking-wide">Nouvelle Opération</span>
+            {/* Active Glow Effect */}
+            {currentView === View.NEW_TRANSACTION && (
+               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+            )}
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                currentView === View.NEW_TRANSACTION ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-indigo-400 group-hover:text-white group-hover:bg-indigo-500/20'
+              }`}>
+                <PlusCircle size={24} strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className={`font-bold text-sm mb-0.5 ${currentView === View.NEW_TRANSACTION ? 'text-white' : 'text-slate-200 group-hover:text-white'}`}>
+                  Nouvelle Opération
+                </div>
+                <div className={`text-xs font-medium ${currentView === View.NEW_TRANSACTION ? 'text-indigo-100' : 'text-slate-500'}`}>
+                  Saisir encaissement ou dépense
+                </div>
+              </div>
+              {currentView === View.NEW_TRANSACTION && <ArrowRight size={16} className="text-white/70" />}
+            </div>
           </button>
 
+          {/* Card Button: Tableau de Bord */}
           <button
             onClick={() => setCurrentView(View.DASHBOARD)}
-            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
+            className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
               currentView === View.DASHBOARD 
-                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
+                : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
             }`}
           >
-            <LayoutDashboard size={22} className={currentView === View.DASHBOARD ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
-            <span className="font-semibold tracking-wide">Tableau de Bord</span>
+            {/* Active Glow Effect */}
+            {currentView === View.DASHBOARD && (
+               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+            )}
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                currentView === View.DASHBOARD ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-slate-400 group-hover:text-white group-hover:bg-indigo-500/20'
+              }`}>
+                <LayoutDashboard size={24} strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className={`font-bold text-sm mb-0.5 ${currentView === View.DASHBOARD ? 'text-white' : 'text-slate-200 group-hover:text-white'}`}>
+                  Tableau de Bord
+                </div>
+                <div className={`text-xs font-medium ${currentView === View.DASHBOARD ? 'text-indigo-100' : 'text-slate-500'}`}>
+                  Statistiques & solde global
+                </div>
+              </div>
+              {currentView === View.DASHBOARD && <ArrowRight size={16} className="text-white/70" />}
+            </div>
           </button>
 
+          {/* Card Button: Historique */}
           <button
             onClick={() => setCurrentView(View.HISTORY)}
-            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
+            className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
               currentView === View.HISTORY 
-                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
-                : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
+                : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
             }`}
           >
-            <History size={22} className={currentView === View.HISTORY ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
-            <span className="font-semibold tracking-wide">Historique</span>
+            {/* Active Glow Effect */}
+            {currentView === View.HISTORY && (
+               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+            )}
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                currentView === View.HISTORY ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-slate-400 group-hover:text-white group-hover:bg-indigo-500/20'
+              }`}>
+                <History size={24} strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className={`font-bold text-sm mb-0.5 ${currentView === View.HISTORY ? 'text-white' : 'text-slate-200 group-hover:text-white'}`}>
+                  Historique
+                </div>
+                <div className={`text-xs font-medium ${currentView === View.HISTORY ? 'text-indigo-100' : 'text-slate-500'}`}>
+                  Journal des transactions
+                </div>
+              </div>
+              {currentView === View.HISTORY && <ArrowRight size={16} className="text-white/70" />}
+            </div>
           </button>
         </nav>
 
         <div className="p-6">
-          <div className="bg-slate-800/50 rounded-2xl p-4 border border-white/5">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold">
-                IV
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white">Agence Ivision</div>
-                <div className="text-xs text-slate-400">Admin</div>
-              </div>
+          <div className="bg-[#1E293B] rounded-2xl p-4 border border-white/5 flex items-center gap-3 shadow-lg">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              IV
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white">Agence Ivision</div>
+              <div className="text-xs text-indigo-400 font-medium">Mode Comptable</div>
             </div>
           </div>
         </div>
@@ -190,7 +256,8 @@ const App: React.FC = () => {
                 </div>
               </div>
               <Dashboard 
-                transactions={transactions} 
+                transactions={transactions}
+                highlightNewData={highlightDashboard}
               />
               <div className="mt-10">
                  <div className="flex items-center justify-between mb-6 px-1">
@@ -234,49 +301,73 @@ const App: React.FC = () => {
         </div>
       </main>
 
+      {/* Show Floating Menu Button if Nav is Hidden */}
+      {!isMobileNavOpen && (
+        <button 
+          onClick={() => setIsMobileNavOpen(true)}
+          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#0F172A] text-white rounded-full shadow-2xl shadow-slate-900/40 z-50 flex items-center justify-center active:scale-90 transition-transform animate-slide-up"
+        >
+          <LayoutGrid size={24} />
+        </button>
+      )}
+
       {/* Modern Floating Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-6 left-6 right-6 h-[4.5rem] bg-[#0F172A]/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-900/40 z-40 border border-white/10 ring-1 ring-black/5">
-        <div className="flex justify-between items-center h-full px-6">
-          
-          <button
-            onClick={() => setCurrentView(View.DASHBOARD)}
-            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
-              currentView === View.DASHBOARD 
-                ? 'text-white scale-110' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <LayoutDashboard size={26} strokeWidth={currentView === View.DASHBOARD ? 2.5 : 2} />
-            {currentView === View.DASHBOARD && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
-          </button>
+      {isMobileNavOpen && (
+        <div className="md:hidden fixed bottom-6 left-6 right-6 z-40 animate-slide-up">
+           {/* Minimize Handle Button */}
+           <div className="absolute -top-12 right-0 flex justify-end pb-2">
+             <button
+                onClick={() => setIsMobileNavOpen(false)}
+                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm text-slate-500 flex items-center justify-center border border-white/50 active:scale-90 transition-transform"
+             >
+                <ChevronDown size={20} />
+             </button>
+           </div>
+           
+           <nav className="h-[4.5rem] bg-[#0F172A]/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-900/40 border border-white/10 ring-1 ring-black/5">
+            <div className="flex justify-between items-center h-full px-6">
+              
+              <button
+                onClick={() => setCurrentView(View.DASHBOARD)}
+                className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
+                  currentView === View.DASHBOARD 
+                    ? 'text-white scale-110' 
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <LayoutDashboard size={26} strokeWidth={currentView === View.DASHBOARD ? 2.5 : 2} />
+                {currentView === View.DASHBOARD && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
+              </button>
 
-          <button
-            onClick={() => setCurrentView(View.NEW_TRANSACTION)}
-            className="relative -top-8 group"
-          >
-            <div className="absolute inset-0 bg-indigo-500 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
-            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
-               currentView === View.NEW_TRANSACTION 
-                 ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/50 scale-110' 
-                 : 'bg-white text-slate-900 shadow-slate-200'
-            }`}>
-              <PlusCircle size={32} strokeWidth={2} className="group-active:scale-90 transition-transform" />
+              <button
+                onClick={() => setCurrentView(View.NEW_TRANSACTION)}
+                className="relative -top-8 group"
+              >
+                <div className="absolute inset-0 bg-indigo-500 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
+                <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+                  currentView === View.NEW_TRANSACTION 
+                    ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/50 scale-110' 
+                    : 'bg-white text-slate-900 shadow-slate-200'
+                }`}>
+                  <PlusCircle size={32} strokeWidth={2} className="group-active:scale-90 transition-transform" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => setCurrentView(View.HISTORY)}
+                className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
+                  currentView === View.HISTORY 
+                    ? 'text-white scale-110' 
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <History size={26} strokeWidth={currentView === View.HISTORY ? 2.5 : 2} />
+                {currentView === View.HISTORY && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
+              </button>
             </div>
-          </button>
-
-          <button
-            onClick={() => setCurrentView(View.HISTORY)}
-            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
-              currentView === View.HISTORY 
-                ? 'text-white scale-110' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <History size={26} strokeWidth={currentView === View.HISTORY ? 2.5 : 2} />
-            {currentView === View.HISTORY && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
-          </button>
+          </nav>
         </div>
-      </nav>
+      )}
 
     </div>
   );
