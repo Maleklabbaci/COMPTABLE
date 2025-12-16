@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import { Transaction } from './types';
 import { getTransactions, saveTransaction } from './services/storageService';
 import { analyzeFinancials } from './services/geminiService';
-import { LayoutDashboard, PlusCircle, History, Eye, Menu } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, History, Eye, Menu, Bell, Search } from 'lucide-react';
 
 enum View {
   DASHBOARD = 'DASHBOARD',
@@ -53,89 +53,128 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#F2F4F8] flex flex-col md:flex-row font-sans text-slate-900 pb-24 md:pb-0">
       
       {/* Desktop Sidebar Navigation (Hidden on Mobile) */}
-      <aside className="hidden md:flex w-64 bg-slate-900 text-white flex-shrink-0 flex-col sticky top-0 h-screen z-50">
-        <div className="p-6 flex items-center gap-3 border-b border-slate-800">
-          <div className="bg-indigo-500 p-2 rounded-lg">
-            <Eye size={24} className="text-white" />
+      <aside className="hidden md:flex w-72 bg-[#0F172A] text-white flex-shrink-0 flex-col sticky top-0 h-screen z-50 shadow-2xl shadow-slate-900/50">
+        <div className="p-8 flex items-center gap-4 mb-2">
+          <div className="relative">
+            <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-40"></div>
+            <div className="relative bg-[#1E293B] p-3 rounded-2xl shadow-inner border border-white/10">
+              <Eye size={28} className="text-white" strokeWidth={2} />
+            </div>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">IVISION</h1>
-            <p className="text-xs text-slate-400">Agence & Comptabilité</p>
+            <h1 className="text-2xl font-black tracking-tight leading-none">IVISION</h1>
+            <p className="text-xs font-bold text-slate-400 tracking-[0.2em] mt-1 uppercase">Books</p>
           </div>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 px-6 space-y-3">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 ml-2">Menu Principal</div>
+          
           <button
             onClick={() => setCurrentView(View.NEW_TRANSACTION)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
               currentView === View.NEW_TRANSACTION 
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' 
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <PlusCircle size={20} />
-            <span className="font-medium">Nouvelle Opération</span>
+            <PlusCircle size={22} className={currentView === View.NEW_TRANSACTION ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
+            <span className="font-semibold tracking-wide">Nouvelle Opération</span>
           </button>
 
           <button
             onClick={() => setCurrentView(View.DASHBOARD)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
               currentView === View.DASHBOARD 
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' 
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <LayoutDashboard size={20} />
-            <span className="font-medium">Tableau de Bord</span>
+            <LayoutDashboard size={22} className={currentView === View.DASHBOARD ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
+            <span className="font-semibold tracking-wide">Tableau de Bord</span>
           </button>
 
           <button
             onClick={() => setCurrentView(View.HISTORY)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+            className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group ${
               currentView === View.HISTORY 
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50' 
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-900/50 translate-x-1' 
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             }`}
           >
-            <History size={20} />
-            <span className="font-medium">Historique</span>
+            <History size={22} className={currentView === View.HISTORY ? 'text-indigo-200' : 'group-hover:text-indigo-400 transition-colors'} />
+            <span className="font-semibold tracking-wide">Historique</span>
           </button>
         </nav>
+
+        <div className="p-6">
+          <div className="bg-slate-800/50 rounded-2xl p-4 border border-white/5">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 font-bold">
+                IV
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white">Agence Ivision</div>
+                <div className="text-xs text-slate-400">Admin</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-5xl mx-auto h-screen">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-6xl mx-auto h-screen relative">
         
-        {/* Mobile Top Header */}
-        <header className="md:hidden mb-6 flex justify-between items-center sticky top-0 bg-[#F2F4F8]/90 backdrop-blur-sm z-30 py-2">
-          <div className="flex items-center gap-2">
-            <div className="bg-slate-900 p-2 rounded-xl shadow-sm">
-              <Eye size={20} className="text-white" />
+        {/* Mobile Top Header - Redesigned to match request */}
+        <header className="md:hidden mb-8 flex justify-between items-center sticky top-0 pt-4 pb-2 px-1 z-30 transition-all">
+          {/* Blur Backdrop */}
+          <div className="absolute inset-x-0 top-0 h-full bg-[#F2F4F8]/90 backdrop-blur-xl border-b border-white/60 shadow-[0_4px_30px_rgba(0,0,0,0.02)] -mx-4"></div>
+          
+          <div className="relative flex items-center gap-3 z-10">
+             {/* Logo Icon Box */}
+            <div className="h-[2.8rem] w-[2.8rem] bg-[#0F172A] rounded-[0.8rem] flex items-center justify-center text-white shadow-lg shadow-slate-200">
+               <Eye size={22} strokeWidth={2.5} />
             </div>
-            <div>
-               <h2 className="text-lg font-black text-slate-800 tracking-tight leading-none">IVISION</h2>
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Books</span>
+            
+             {/* Text Brand */}
+            <div className="flex flex-col justify-center gap-[2px]">
+               <h2 className="text-[1.35rem] font-black text-[#0F172A] tracking-tight leading-none">IVISION</h2>
+               <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-[0.25em] leading-none ml-0.5">BOOKS</span>
             </div>
           </div>
-          <div className="h-8 w-8 rounded-full bg-slate-200 border-2 border-white shadow-sm" />
+          
+          <div className="relative flex items-center gap-2 z-10">
+            {/* Profile Avatar */}
+            <div className="h-[2.6rem] w-[2.6rem] rounded-full bg-slate-200 border-[3px] border-white shadow-sm overflow-hidden">
+               <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          </div>
         </header>
 
         {/* Dynamic Content */}
-        <div className="animate-fade-in h-full flex flex-col">
+        <div className="animate-fade-in h-full flex flex-col relative z-0">
           {currentView === View.NEW_TRANSACTION && (
-            <div className="max-w-xl mx-auto w-full h-full">
-              <div className="hidden md:block mb-6">
-                <h2 className="text-3xl font-bold text-slate-800">Interface de Paiement</h2>
-                <p className="text-slate-500">Enregistrez une vente ou une dépense.</p>
+            <div className="max-w-2xl mx-auto w-full h-full">
+              <div className="hidden md:flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Paiement</h2>
+                  <p className="text-slate-500 mt-2 font-medium">Enregistrez une nouvelle transaction pour l'agence.</p>
+                </div>
+                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-lg shadow-slate-200 text-indigo-600">
+                  <PlusCircle size={32} />
+                </div>
               </div>
               <TransactionForm onTransactionAdded={handleTransactionAdded} />
             </div>
           )}
 
           {currentView === View.DASHBOARD && (
-            <div className="pb-20">
-              <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-slate-800">Tableau de Bord</h2>
+            <div className="pb-20 max-w-5xl mx-auto">
+              <div className="hidden md:flex mb-8 justify-between items-center">
+                <div>
+                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Tableau de Bord</h2>
+                  <p className="text-slate-500 mt-2 font-medium">Vue d'ensemble de la santé financière.</p>
+                </div>
               </div>
               <Dashboard 
                 transactions={transactions} 
@@ -143,18 +182,42 @@ const App: React.FC = () => {
                 loadingAi={loadingAi} 
                 onRefreshAi={() => handleRefreshAi(transactions)} 
               />
-              <div className="mt-8">
-                 <h3 className="text-lg font-bold text-slate-800 mb-4 px-1">Opérations Récentes</h3>
+              <div className="mt-10">
+                 <div className="flex items-center justify-between mb-6 px-1">
+                   <h3 className="text-xl font-extrabold text-slate-900">Opérations Récentes</h3>
+                   <button 
+                     onClick={() => setCurrentView(View.HISTORY)}
+                     className="text-sm font-bold text-indigo-600 hover:text-indigo-700"
+                   >
+                     Tout voir
+                   </button>
+                 </div>
                  <TransactionList transactions={transactions.slice(0, 5)} />
               </div>
             </div>
           )}
 
           {currentView === View.HISTORY && (
-            <div className="pb-20">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Historique</h2>
+            <div className="pb-20 max-w-4xl mx-auto">
+              <div className="hidden md:flex mb-8 justify-between items-center">
+                 <div>
+                  <h2 className="text-4xl font-black text-slate-900 tracking-tight">Historique</h2>
+                  <p className="text-slate-500 mt-2 font-medium">Toutes les transactions passées.</p>
+                </div>
               </div>
+              
+              {/* Search Bar Placeholder for History */}
+              <div className="mb-6 relative">
+                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                   <Search size={20} />
+                 </div>
+                 <input 
+                   type="text" 
+                   placeholder="Rechercher une transaction..." 
+                   className="w-full h-14 pl-12 pr-4 bg-white rounded-2xl shadow-sm border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-slate-800 font-medium"
+                 />
+              </div>
+
               <TransactionList transactions={transactions} onDelete={handleDelete} />
             </div>
           )}
@@ -162,44 +225,45 @@ const App: React.FC = () => {
       </main>
 
       {/* Modern Floating Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-6 left-4 right-4 h-16 bg-slate-900/90 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-400/30 z-40 border border-white/10">
-        <div className="flex justify-around items-center h-full px-2">
+      <nav className="md:hidden fixed bottom-6 left-6 right-6 h-[4.5rem] bg-[#0F172A]/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-900/40 z-40 border border-white/10 ring-1 ring-black/5">
+        <div className="flex justify-between items-center h-full px-6">
           
           <button
             onClick={() => setCurrentView(View.DASHBOARD)}
-            className={`relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 ${
+            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
               currentView === View.DASHBOARD 
-                ? 'bg-white/10 text-white translate-y-[-4px]' 
-                : 'text-slate-400 hover:text-white'
+                ? 'text-white scale-110' 
+                : 'text-slate-500 hover:text-slate-300'
             }`}
           >
-            <LayoutDashboard size={24} strokeWidth={2} />
-            {currentView === View.DASHBOARD && <span className="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full" />}
+            <LayoutDashboard size={26} strokeWidth={currentView === View.DASHBOARD ? 2.5 : 2} />
+            {currentView === View.DASHBOARD && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
           </button>
 
           <button
             onClick={() => setCurrentView(View.NEW_TRANSACTION)}
-            className="relative -top-6 group"
+            className="relative -top-8 group"
           >
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+            <div className="absolute inset-0 bg-indigo-500 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
                currentView === View.NEW_TRANSACTION 
-                 ? 'bg-indigo-500 text-white shadow-indigo-500/40 scale-110' 
+                 ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/50 scale-110' 
                  : 'bg-white text-slate-900 shadow-slate-200'
             }`}>
-              <PlusCircle size={32} strokeWidth={1.5} className="group-active:scale-90 transition-transform" />
+              <PlusCircle size={32} strokeWidth={2} className="group-active:scale-90 transition-transform" />
             </div>
           </button>
 
           <button
             onClick={() => setCurrentView(View.HISTORY)}
-            className={`relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 ${
+            className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
               currentView === View.HISTORY 
-                ? 'bg-white/10 text-white translate-y-[-4px]' 
-                : 'text-slate-400 hover:text-white'
+                ? 'text-white scale-110' 
+                : 'text-slate-500 hover:text-slate-300'
             }`}
           >
-            <History size={24} strokeWidth={2} />
-            {currentView === View.HISTORY && <span className="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full" />}
+            <History size={26} strokeWidth={currentView === View.HISTORY ? 2.5 : 2} />
+            {currentView === View.HISTORY && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
           </button>
         </div>
       </nav>
