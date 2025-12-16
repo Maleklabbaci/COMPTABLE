@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import Dashboard from './components/Dashboard';
+import NotificationToast from './components/NotificationToast'; // Import Notification
 import { Transaction } from './types';
-import { getTransactions, saveTransaction } from './services/storageService';
+import { getTransactions, saveTransaction, getStoredAnalysis, saveStoredAnalysis } from './services/storageService';
 import { analyzeFinancials } from './services/geminiService';
 import { LayoutDashboard, PlusCircle, History, Eye, Menu, Bell, Search } from 'lucide-react';
 
@@ -13,45 +14,109 @@ enum View {
   HISTORY = 'HISTORY'
 }
 
+type NotificationState = {
+  message: string;
+  type: 'success' | 'error' | 'ai';
+} | null;
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.NEW_TRANSACTION);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [notification, setNotification] = useState<NotificationState>(null);
+
+  // Helper to show notifications
+  const showNotification = (message: string, type: 'success' | 'error' | 'ai') => {
+    setNotification({ message, type });
+  };
 
   // Initial load
   useEffect(() => {
-    const loaded = getTransactions();
-    setTransactions(loaded);
-    if(loaded.length > 0) {
-      handleRefreshAi(loaded);
+    // 1. Load Transactions
+    const loadedTransactions = getTransactions();
+    setTransactions(loadedTransactions);
+
+    // 2. Load Saved Analysis (Instant load, no waiting)
+    const savedAnalysis = getStoredAnalysis();
+    if (savedAnalysis) {
+      setAiAnalysis(savedAnalysis);
+    } else if (loadedTransactions.length > 0) {
+      // Only generate if we have data but no saved analysis
+      handleRefreshAi(loadedTransactions, false); // false = don't notify on initial silent load
     }
   }, []);
 
-  const handleTransactionAdded = (t: Transaction) => {
+  const handleTransactionAdded = async (t: Transaction) => {
+    // 1. Save Transaction locally
     const updated = saveTransaction(t);
     setTransactions(updated);
-    // Switch to dashboard to see result
+    
+    // 2. Move to Dashboard immediately for better UX
     setCurrentView(View.DASHBOARD);
+
+    // 3. Trigger Automatic AI Analysis
+    setLoadingAi(true);
+    try {
+      // Generate new analysis based on updated data
+      const analysis = await analyzeFinancials(updated);
+      
+      // Update state
+      setAiAnalysis(analysis);
+      
+      // Persist analysis so it is "kept" (garde la)
+      saveStoredAnalysis(analysis);
+      
+      // Notify user
+      showNotification("Nouvelle analyse comptable disponible.", "ai");
+    } catch (error) {
+      console.error("Auto-analysis failed", error);
+      // We don't error toast here to avoid annoying user if background sync fails
+    } finally {
+      setLoadingAi(false);
+    }
   };
 
-  const handleRefreshAi = async (data: Transaction[] = transactions) => {
+  const handleRefreshAi = async (data: Transaction[] = transactions, notify: boolean = true) => {
     if (data.length === 0) return;
     setLoadingAi(true);
-    const analysis = await analyzeFinancials(data);
-    setAiAnalysis(analysis);
-    setLoadingAi(false);
+    try {
+      const analysis = await analyzeFinancials(data);
+      setAiAnalysis(analysis);
+      saveStoredAnalysis(analysis); // Save on manual refresh too
+      if (notify) {
+        showNotification("Analyse mise à jour avec succès.", "ai");
+      }
+    } catch (error) {
+      console.error(error);
+      if (notify) {
+        showNotification("Impossible de générer l'analyse.", "error");
+      }
+    } finally {
+      setLoadingAi(false);
+    }
   };
 
   const handleDelete = (id: string) => {
     const updated = transactions.filter(t => t.id !== id);
     setTransactions(updated);
     localStorage.setItem('ivision_transactions_v1', JSON.stringify(updated));
+    // Optional: Re-analyze after deletion to keep data accurate
+    handleRefreshAi(updated, false);
   };
 
   return (
     <div className="min-h-screen bg-[#F2F4F8] flex flex-col md:flex-row font-sans text-slate-900 pb-24 md:pb-0">
       
+      {/* Toast Notification Layer */}
+      {notification && (
+        <NotificationToast 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)} 
+        />
+      )}
+
       {/* Desktop Sidebar Navigation (Hidden on Mobile) */}
       <aside className="hidden md:flex w-72 bg-[#0F172A] text-white flex-shrink-0 flex-col sticky top-0 h-screen z-50 shadow-2xl shadow-slate-900/50">
         <div className="p-8 flex items-center gap-4 mb-2">
