@@ -4,9 +4,8 @@ import TransactionList from './components/TransactionList';
 import Dashboard from './components/Dashboard';
 import NotificationToast from './components/NotificationToast'; // Import Notification
 import { Transaction } from './types';
-import { getTransactions, saveTransaction, getStoredAnalysis, saveStoredAnalysis } from './services/storageService';
-import { analyzeFinancials } from './services/geminiService';
-import { LayoutDashboard, PlusCircle, History, Eye, Menu, Bell, Search } from 'lucide-react';
+import { getTransactions, saveTransaction } from './services/storageService';
+import { LayoutDashboard, PlusCircle, History, Eye, Search } from 'lucide-react';
 
 enum View {
   DASHBOARD = 'DASHBOARD',
@@ -16,18 +15,16 @@ enum View {
 
 type NotificationState = {
   message: string;
-  type: 'success' | 'error' | 'ai';
+  type: 'success' | 'error';
 } | null;
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.NEW_TRANSACTION);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
   const [notification, setNotification] = useState<NotificationState>(null);
 
   // Helper to show notifications
-  const showNotification = (message: string, type: 'success' | 'error' | 'ai') => {
+  const showNotification = (message: string, type: 'success' | 'error') => {
     setNotification({ message, type });
   };
 
@@ -36,15 +33,6 @@ const App: React.FC = () => {
     // 1. Load Transactions
     const loadedTransactions = getTransactions();
     setTransactions(loadedTransactions);
-
-    // 2. Load Saved Analysis (Instant load, no waiting)
-    const savedAnalysis = getStoredAnalysis();
-    if (savedAnalysis) {
-      setAiAnalysis(savedAnalysis);
-    } else if (loadedTransactions.length > 0) {
-      // Only generate if we have data but no saved analysis
-      handleRefreshAi(loadedTransactions, false); // false = don't notify on initial silent load
-    }
   }, []);
 
   const handleTransactionAdded = async (t: Transaction) => {
@@ -55,54 +43,14 @@ const App: React.FC = () => {
     // 2. Move to Dashboard immediately for better UX
     setCurrentView(View.DASHBOARD);
 
-    // 3. Trigger Automatic AI Analysis
-    setLoadingAi(true);
-    try {
-      // Generate new analysis based on updated data
-      const analysis = await analyzeFinancials(updated);
-      
-      // Update state
-      setAiAnalysis(analysis);
-      
-      // Persist analysis so it is "kept" (garde la)
-      saveStoredAnalysis(analysis);
-      
-      // Notify user
-      showNotification("Nouvelle analyse comptable disponible.", "ai");
-    } catch (error) {
-      console.error("Auto-analysis failed", error);
-      // We don't error toast here to avoid annoying user if background sync fails
-    } finally {
-      setLoadingAi(false);
-    }
-  };
-
-  const handleRefreshAi = async (data: Transaction[] = transactions, notify: boolean = true) => {
-    if (data.length === 0) return;
-    setLoadingAi(true);
-    try {
-      const analysis = await analyzeFinancials(data);
-      setAiAnalysis(analysis);
-      saveStoredAnalysis(analysis); // Save on manual refresh too
-      if (notify) {
-        showNotification("Analyse mise à jour avec succès.", "ai");
-      }
-    } catch (error) {
-      console.error(error);
-      if (notify) {
-        showNotification("Impossible de générer l'analyse.", "error");
-      }
-    } finally {
-      setLoadingAi(false);
-    }
+    // 3. Notify user
+    showNotification("Transaction enregistrée avec succès.", "success");
   };
 
   const handleDelete = (id: string) => {
     const updated = transactions.filter(t => t.id !== id);
     setTransactions(updated);
     localStorage.setItem('ivision_transactions_v1', JSON.stringify(updated));
-    // Optional: Re-analyze after deletion to keep data accurate
-    handleRefreshAi(updated, false);
   };
 
   return (
@@ -243,9 +191,6 @@ const App: React.FC = () => {
               </div>
               <Dashboard 
                 transactions={transactions} 
-                aiAnalysis={aiAnalysis} 
-                loadingAi={loadingAi} 
-                onRefreshAi={() => handleRefreshAi(transactions)} 
               />
               <div className="mt-10">
                  <div className="flex items-center justify-between mb-6 px-1">

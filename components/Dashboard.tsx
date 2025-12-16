@@ -1,21 +1,33 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Transaction, TransactionType } from '../types';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, Activity, PieChart as PieChartIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PieChart as PieChartIcon, Moon, Sun } from 'lucide-react';
 
 interface DashboardProps {
   transactions: Transaction[];
-  aiAnalysis: string | null;
-  loadingAi: boolean;
-  onRefreshAi: () => void;
 }
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#10b981', '#f59e0b', '#64748b'];
 
-const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loadingAi, onRefreshAi }) => {
+const Dashboard: React.FC<DashboardProps> = ({ transactions }) => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Theme Constants
+  const theme = {
+    cardBg: darkMode ? 'bg-[#1e293b]' : 'bg-white',
+    cardBorder: darkMode ? 'border-slate-700/50' : 'border-slate-100',
+    textMain: darkMode ? 'text-white' : 'text-slate-800',
+    textSub: darkMode ? 'text-slate-400' : 'text-slate-400', // Keep subtext similar
+    iconBg: (color: string) => darkMode ? `bg-opacity-10 bg-${color}-500` : `bg-${color}-50`,
+    chartGrid: darkMode ? '#334155' : '#f1f5f9',
+    axisText: darkMode ? '#94a3b8' : '#94a3b8',
+    tooltipBg: darkMode ? 'bg-[#0f172a]' : 'bg-white',
+    tooltipBorder: darkMode ? 'border-slate-700' : 'border-slate-100',
+    tooltipText: darkMode ? 'text-slate-200' : 'text-slate-800',
+  };
   
   // 1. Basic Stats
   const stats = useMemo(() => {
@@ -76,16 +88,16 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
   const CustomAreaTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-4 border border-slate-100 shadow-2xl rounded-2xl ring-1 ring-black/5 min-w-[180px]">
-          <p className="font-bold text-slate-800 mb-3 text-sm border-b border-slate-50 pb-2">{label}</p>
+        <div className={`${theme.tooltipBg} p-4 border ${theme.tooltipBorder} shadow-2xl rounded-2xl ring-1 ring-black/5 min-w-[180px]`}>
+          <p className={`font-bold ${theme.tooltipText} mb-3 text-sm border-b ${darkMode ? 'border-slate-700' : 'border-slate-50'} pb-2`}>{label}</p>
           <div className="space-y-2">
             {payload.map((entry: any, index: number) => (
               <div key={index} className="flex items-center justify-between gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                   <div className="w-2 h-2 rounded-full ring-2 ring-white shadow-sm" style={{ backgroundColor: entry.color }} />
+                   <div className="w-2 h-2 rounded-full ring-2 ring-white/10 shadow-sm" style={{ backgroundColor: entry.color }} />
                    <span className="text-slate-500 font-medium capitalize">{entry.name}</span>
                 </div>
-                <span className={`font-bold font-mono ${entry.name === 'Entrées' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className={`font-bold font-mono ${entry.name === 'Entrées' ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {formatCurrency(entry.value)} <span className="text-[10px] opacity-60">DA</span>
                 </span>
               </div>
@@ -104,18 +116,18 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
       const percentage = total > 0 ? ((data.value / total) * 100).toFixed(1) : '0';
 
       return (
-        <div className="bg-white p-4 border border-slate-100 shadow-2xl rounded-2xl ring-1 ring-black/5 min-w-[160px]">
-          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-50">
+        <div className={`${theme.tooltipBg} p-4 border ${theme.tooltipBorder} shadow-2xl rounded-2xl ring-1 ring-black/5 min-w-[160px]`}>
+          <div className={`flex items-center gap-2 mb-3 pb-2 border-b ${darkMode ? 'border-slate-700' : 'border-slate-50'}`}>
             <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: data.payload.fill || data.fill || COLORS[0] }}></div>
-            <p className="font-bold text-slate-800 text-sm">{data.name}</p>
+            <p className={`font-bold ${theme.tooltipText} text-sm`}>{data.name}</p>
           </div>
           <div className="space-y-2">
              <div className="flex justify-between items-baseline gap-4">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Montant</span>
-                <span className="font-bold text-slate-700 font-mono text-sm">{formatCurrency(data.value)} <span className="text-[10px] text-slate-400">DA</span></span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Montant</span>
+                <span className={`font-bold ${darkMode ? 'text-slate-300' : 'text-slate-700'} font-mono text-sm`}>{formatCurrency(data.value)} <span className="text-[10px] text-slate-500">DA</span></span>
              </div>
              <div className="flex justify-between items-center gap-4">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Part</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Part</span>
                 <span className="font-bold text-xs text-white bg-slate-900 px-2 py-1 rounded-lg shadow-sm">{percentage}%</span>
              </div>
           </div>
@@ -128,54 +140,69 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
   return (
     <div className="space-y-6">
       
+      {/* Theme Toggle & Header Controls */}
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+            darkMode 
+              ? 'bg-slate-800 text-indigo-400 border border-slate-700 shadow-lg shadow-indigo-900/20' 
+              : 'bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-slate-50'
+          }`}
+        >
+          {darkMode ? <Moon size={16} /> : <Sun size={16} />}
+          <span>{darkMode ? 'Mode Sombre' : 'Mode Clair'}</span>
+        </button>
+      </div>
+
       {/* --- KPI Cards --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5 relative overflow-hidden">
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 relative overflow-hidden transition-colors duration-300`}>
           <div className="absolute right-0 top-0 p-4 opacity-5">
-            <Wallet size={100} />
+            <Wallet size={100} className={darkMode ? 'text-white' : 'text-black'} />
           </div>
-          <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
             <Wallet size={28} />
           </div>
           <div className="relative z-10">
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Solde Net</p>
-            <h3 className={`text-2xl font-black ${stats.balance >= 0 ? 'text-slate-800' : 'text-rose-600'}`}>
-              {formatCurrency(stats.balance)} <span className="text-sm font-bold text-slate-400">DA</span>
+            <p className={`${theme.textSub} text-xs font-bold uppercase tracking-wider mb-1`}>Solde Net</p>
+            <h3 className={`text-2xl font-black ${stats.balance >= 0 ? theme.textMain : 'text-rose-500'}`}>
+              {formatCurrency(stats.balance)} <span className="text-sm font-bold text-slate-500">DA</span>
             </h3>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5">
-          <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-colors duration-300`}>
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
             <TrendingUp size={28} />
           </div>
           <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Revenus</p>
-            <h3 className="text-2xl font-black text-slate-800">
-              {formatCurrency(stats.income)} <span className="text-sm font-bold text-slate-400">DA</span>
+            <p className={`${theme.textSub} text-xs font-bold uppercase tracking-wider mb-1`}>Revenus</p>
+            <h3 className={`text-2xl font-black ${theme.textMain}`}>
+              {formatCurrency(stats.income)} <span className="text-sm font-bold text-slate-500">DA</span>
             </h3>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-5">
-          <div className="p-4 bg-rose-50 text-rose-600 rounded-2xl">
+        <div className={`${theme.cardBg} p-6 rounded-3xl shadow-sm border ${theme.cardBorder} flex items-center gap-5 transition-colors duration-300`}>
+          <div className={`p-4 rounded-2xl ${darkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'}`}>
             <TrendingDown size={28} />
           </div>
           <div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Dépenses</p>
-            <h3 className="text-2xl font-black text-slate-800">
-              {formatCurrency(stats.expense)} <span className="text-sm font-bold text-slate-400">DA</span>
+            <p className={`${theme.textSub} text-xs font-bold uppercase tracking-wider mb-1`}>Dépenses</p>
+            <h3 className={`text-2xl font-black ${theme.textMain}`}>
+              {formatCurrency(stats.expense)} <span className="text-sm font-bold text-slate-500">DA</span>
             </h3>
           </div>
         </div>
       </div>
 
       {/* --- Monthly Trend Chart --- */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100">
+      <div className={`${theme.cardBg} p-6 md:p-8 rounded-3xl shadow-sm border ${theme.cardBorder} transition-colors duration-300`}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h3 className="text-lg font-bold text-slate-800">Évolution Mensuelle</h3>
-            <p className="text-slate-400 text-sm">Comparatif Entrées vs Sorties</p>
+            <h3 className={`text-lg font-bold ${theme.textMain}`}>Évolution Mensuelle</h3>
+            <p className={`${theme.textSub} text-sm`}>Comparatif Entrées vs Sorties</p>
           </div>
         </div>
         <div className="h-72 w-full">
@@ -192,21 +219,21 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
                     <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.chartGrid} />
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 12 }} 
+                  tick={{ fill: theme.axisText, fontSize: 12 }} 
                   dy={10}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tick={{ fill: theme.axisText, fontSize: 12 }}
                   tickFormatter={(val) => `${val / 1000}k`} 
                 />
-                <Tooltip content={<CustomAreaTooltip />} cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }} />
+                <Tooltip content={<CustomAreaTooltip />} cursor={{ stroke: theme.chartGrid, strokeDasharray: '4 4' }} />
                 <Area 
                   type="monotone" 
                   dataKey="income" 
@@ -235,17 +262,17 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         
         {/* --- Expense Category Breakdown --- */}
-        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
+        <div className={`${theme.cardBg} p-6 md:p-8 rounded-3xl shadow-sm border ${theme.cardBorder} flex flex-col transition-colors duration-300`}>
           <div className="flex items-center gap-3 mb-6">
-             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+             <div className={`p-2 rounded-lg ${darkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
                <PieChartIcon size={20} />
              </div>
              <div>
-               <h3 className="text-lg font-bold text-slate-800">Répartition des Dépenses</h3>
-               <p className="text-slate-400 text-sm">Par catégorie</p>
+               <h3 className={`text-lg font-bold ${theme.textMain}`}>Répartition des Dépenses</h3>
+               <p className={`${theme.textSub} text-sm`}>Par catégorie</p>
              </div>
           </div>
           
@@ -271,75 +298,27 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, aiAnalysis, loading
                     layout="vertical" 
                     verticalAlign="middle" 
                     align="right"
-                    wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}
+                    wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: darkMode ? '#94a3b8' : '#475569' }}
                     iconType="circle"
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
                <div className="flex flex-col items-center text-slate-400">
-                 <div className="w-20 h-20 rounded-full border-4 border-slate-100 mb-2"></div>
+                 <div className={`w-20 h-20 rounded-full border-4 ${darkMode ? 'border-slate-700' : 'border-slate-100'} mb-2`}></div>
                  <p className="text-sm">Aucune dépense enregistrée</p>
                </div>
             )}
             {/* Center Text for Donut */}
             {categoryData.length > 0 && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pr-24 lg:pr-28">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</span>
-                <span className="text-xl font-black text-slate-800">{formatCurrency(stats.expense)}</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total</span>
+                <span className={`text-xl font-black ${theme.textMain}`}>{formatCurrency(stats.expense)}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* --- AI Insights --- */}
-        <div className="bg-gradient-to-br from-[#1e1b4b] to-[#0f172a] p-8 rounded-3xl shadow-xl text-white flex flex-col relative overflow-hidden ring-1 ring-white/10">
-          <div className="absolute -top-10 -right-10 opacity-[0.07] rotate-12">
-             <Activity size={250} />
-          </div>
-          
-          <div className="flex justify-between items-start mb-6 z-10">
-            <div>
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                <span className="bg-indigo-500 p-1.5 rounded-lg">
-                  <Activity size={16} className="text-white" />
-                </span>
-                Vision IA
-              </h3>
-              <p className="text-indigo-200 text-sm mt-1 ml-1">Analyse comptable automatique</p>
-            </div>
-            <button 
-              onClick={onRefreshAi}
-              disabled={loadingAi}
-              className="text-xs bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all disabled:opacity-50 font-semibold backdrop-blur-md border border-white/5"
-            >
-              {loadingAi ? 'Analyse en cours...' : 'Actualiser'}
-            </button>
-          </div>
-
-          <div className="flex-1 z-10 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/5">
-            {aiAnalysis ? (
-              <div className="prose prose-invert prose-sm max-w-none">
-                <p className="whitespace-pre-line leading-relaxed text-slate-200 font-light">
-                  {aiAnalysis}
-                </p>
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-indigo-300/60 py-10">
-                <Activity size={40} className="mb-4 opacity-50" />
-                <p className="text-sm font-medium">En attente de transactions...</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="mt-4 z-10 flex gap-2">
-             <div className="h-1 flex-1 bg-indigo-500/30 rounded-full overflow-hidden">
-               <div className={`h-full bg-indigo-400 ${loadingAi ? 'w-full animate-pulse' : 'w-2/3'}`}></div>
-             </div>
-             <div className="h-1 w-2 bg-indigo-500/30 rounded-full"></div>
-             <div className="h-1 w-2 bg-indigo-500/30 rounded-full"></div>
-          </div>
-        </div>
       </div>
 
     </div>
