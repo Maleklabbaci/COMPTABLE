@@ -62,6 +62,12 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Failsafe: manual dismiss
+  const handleSplashClick = () => {
+    setSplashFading(true);
+    setTimeout(() => setShowSplash(false), 300);
+  };
+
   const handleTransactionAdded = async (t: Transaction) => {
     // 1. Save Transaction locally
     const updated = saveTransaction(t);
@@ -94,10 +100,11 @@ const App: React.FC = () => {
 
   return (
     <>
-      {/* Splash Screen Overlay */}
+      {/* Splash Screen Overlay - Clickable to dismiss as failsafe */}
       {showSplash && (
         <div 
-          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out ${
+          onClick={handleSplashClick}
+          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out cursor-pointer ${
             splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
@@ -118,6 +125,11 @@ const App: React.FC = () => {
               <span className="w-3 h-3 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
               <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
             </div>
+            
+            {/* Helper Text for manual dismiss */}
+            <p className="absolute bottom-10 text-slate-400 text-xs font-medium uppercase tracking-widest animate-pulse">
+              Touchez pour démarrer
+            </p>
           </div>
         </div>
       )}
