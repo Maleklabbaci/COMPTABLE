@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TransactionType, SERVICES, EXPENSE_CATEGORIES, Transaction } from '../types';
 import { 
   ArrowLeft, Check, ChevronRight,
@@ -17,14 +17,15 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 interface TransactionFormProps {
   onTransactionAdded: (t: Transaction) => void;
+  initialType?: TransactionType;
 }
 
 type Step = 'SELECTION' | 'DETAILS';
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded }) => {
-  // Default to SELECTION step and INCOME type for immediate access
+const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded, initialType }) => {
+  // Default to SELECTION step and initialType (or INCOME) for immediate access
   const [step, setStep] = useState<Step>('SELECTION');
-  const [type, setType] = useState<TransactionType>(TransactionType.INCOME);
+  const [type, setType] = useState<TransactionType>(initialType || TransactionType.INCOME);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   
   // Form State
@@ -32,14 +33,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded })
   const [clientName, setClientName] = useState('');
   const [description, setDescription] = useState('');
 
+  // Sync state when prop changes (e.g. clicking Nav buttons while form is open)
+  useEffect(() => {
+    if (initialType) {
+      setType(initialType);
+      // Reset selection when switching modes to prevent stale data
+      setStep('SELECTION');
+      setSelectedItem(null);
+      setAmount('');
+      setClientName('');
+      setDescription('');
+    }
+  }, [initialType]);
+
   const resetForm = () => {
     setStep('SELECTION');
     setSelectedItem(null);
     setAmount('');
     setClientName('');
     setDescription('');
-    // Reset to Income defaults as it's the primary use case
-    setType(TransactionType.INCOME);
+    // Reset to initial type if provided, otherwise Income
+    setType(initialType || TransactionType.INCOME);
   };
 
   const handleItemSelect = (item: any) => {

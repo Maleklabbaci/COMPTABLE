@@ -3,9 +3,9 @@ import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import Dashboard from './components/Dashboard';
 import NotificationToast from './components/NotificationToast'; // Import Notification
-import { Transaction } from './types';
+import { Transaction, TransactionType } from './types';
 import { getTransactions, saveTransaction } from './services/storageService';
-import { LayoutDashboard, PlusCircle, History, Eye, Search, ArrowRight, ChevronDown, LayoutGrid } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, History, Eye, Search, ArrowRight, ChevronDown, LayoutGrid, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
 enum View {
   DASHBOARD = 'DASHBOARD',
@@ -20,6 +20,7 @@ type NotificationState = {
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.NEW_TRANSACTION);
+  const [initialTransactionType, setInitialTransactionType] = useState<TransactionType>(TransactionType.INCOME);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [notification, setNotification] = useState<NotificationState>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(true);
@@ -87,6 +88,25 @@ const App: React.FC = () => {
     setTransactions(updated);
     localStorage.setItem('ivision_transactions_v1', JSON.stringify(updated));
     showNotification("Transaction supprimée.", "success");
+  };
+
+  // Navigation Handlers
+  const handleNavDashboard = () => setCurrentView(View.DASHBOARD);
+  const handleNavHistory = () => setCurrentView(View.HISTORY);
+  
+  const handleNavNewTransaction = () => {
+    setInitialTransactionType(TransactionType.INCOME);
+    setCurrentView(View.NEW_TRANSACTION);
+  };
+
+  const handleNavIncome = () => {
+    setInitialTransactionType(TransactionType.INCOME);
+    setCurrentView(View.NEW_TRANSACTION);
+  };
+
+  const handleNavExpense = () => {
+    setInitialTransactionType(TransactionType.EXPENSE);
+    setCurrentView(View.NEW_TRANSACTION);
   };
 
   // Filter transactions for History view
@@ -157,7 +177,7 @@ const App: React.FC = () => {
             
             {/* Card Button: Nouvelle Opération */}
             <button
-              onClick={() => setCurrentView(View.NEW_TRANSACTION)}
+              onClick={handleNavNewTransaction}
               className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
                 currentView === View.NEW_TRANSACTION 
                   ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
@@ -184,7 +204,7 @@ const App: React.FC = () => {
 
             {/* Card Button: Tableau de Bord */}
             <button
-              onClick={() => setCurrentView(View.DASHBOARD)}
+              onClick={handleNavDashboard}
               className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
                 currentView === View.DASHBOARD 
                   ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
@@ -211,7 +231,7 @@ const App: React.FC = () => {
 
             {/* Card Button: Historique */}
             <button
-              onClick={() => setCurrentView(View.HISTORY)}
+              onClick={handleNavHistory}
               className={`w-full group relative p-4 rounded-[1.5rem] border transition-all duration-300 text-left overflow-hidden ${
                 currentView === View.HISTORY 
                   ? 'bg-gradient-to-br from-indigo-600 to-violet-600 border-transparent shadow-xl shadow-indigo-900/50 scale-[1.02]' 
@@ -238,10 +258,10 @@ const App: React.FC = () => {
           </nav>
         </aside>
 
-        {/* Main Content - Simplified structure for reliability */}
+        {/* Main Content - Simplified for robust mobile scrolling */}
         <main className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 relative">
           
-          {/* Mobile Top Header - Sticky */}
+          {/* Mobile Top Header */}
           <header className="md:hidden flex justify-between items-center sticky top-0 pt-2 pb-4 z-30 bg-[#F2F4F8]/95 backdrop-blur-xl -mx-4 px-5 border-b border-slate-200/50 mb-6">
             <div className="relative flex items-center gap-3">
               <div className="h-[2.8rem] w-[2.8rem] bg-[#0F172A] rounded-[0.8rem] flex items-center justify-center text-white shadow-lg shadow-slate-200">
@@ -270,7 +290,10 @@ const App: React.FC = () => {
                     <PlusCircle size={32} />
                   </div>
                 </div>
-                <TransactionForm onTransactionAdded={handleTransactionAdded} />
+                <TransactionForm 
+                  onTransactionAdded={handleTransactionAdded} 
+                  initialType={initialTransactionType}
+                />
               </div>
             )}
 
@@ -290,7 +313,7 @@ const App: React.FC = () => {
                    <div className="flex items-center justify-between mb-6 px-1">
                      <h3 className="text-xl font-extrabold text-slate-900">Opérations Récentes</h3>
                      <button 
-                       onClick={() => setCurrentView(View.HISTORY)}
+                       onClick={handleNavHistory}
                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700"
                      >
                        Tout voir
@@ -355,45 +378,73 @@ const App: React.FC = () => {
              </div>
              
              <nav className="h-[4.5rem] bg-[#0F172A]/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-900/40 border border-white/10 ring-1 ring-black/5">
-              <div className="flex justify-between items-center h-full px-6">
+              <div className="flex justify-between items-center h-full px-4">
                 
+                {/* 1. Dashboard */}
                 <button
-                  onClick={() => setCurrentView(View.DASHBOARD)}
-                  className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
+                  onClick={handleNavDashboard}
+                  className={`flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
                     currentView === View.DASHBOARD 
                       ? 'text-white scale-110' 
                       : 'text-slate-500 hover:text-slate-300'
                   }`}
                 >
-                  <LayoutDashboard size={26} strokeWidth={currentView === View.DASHBOARD ? 2.5 : 2} />
-                  {currentView === View.DASHBOARD && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
+                  <LayoutDashboard size={24} strokeWidth={currentView === View.DASHBOARD ? 2.5 : 2} />
+                  {currentView === View.DASHBOARD && <span className="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
                 </button>
 
+                {/* 2. New Income (Quick Action) */}
                 <button
-                  onClick={() => setCurrentView(View.NEW_TRANSACTION)}
-                  className="relative -top-8 group"
+                  onClick={handleNavIncome}
+                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${
+                    (currentView === View.NEW_TRANSACTION && initialTransactionType === TransactionType.INCOME)
+                      ? 'bg-emerald-500/20 text-emerald-400 scale-105 border border-emerald-500/30' 
+                      : 'text-slate-500 hover:text-emerald-400 hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowDownLeft size={22} strokeWidth={2.5} />
+                </button>
+
+                {/* 3. Main New Transaction (Center) */}
+                <button
+                  onClick={handleNavNewTransaction}
+                  className="relative -top-6 group"
                 >
                   <div className="absolute inset-0 bg-indigo-500 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
-                  <div className={`relative w-16 h-16 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+                  <div className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
                     currentView === View.NEW_TRANSACTION 
-                      ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/50 scale-110' 
+                      ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-indigo-500/50 scale-105' 
                       : 'bg-white text-slate-900 shadow-slate-200'
                   }`}>
-                    <PlusCircle size={32} strokeWidth={2} className="group-active:scale-90 transition-transform" />
+                    <PlusCircle size={28} strokeWidth={2} className="group-active:scale-90 transition-transform" />
                   </div>
                 </button>
 
+                {/* 4. New Expense (Quick Action) */}
                 <button
-                  onClick={() => setCurrentView(View.HISTORY)}
-                  className={`relative flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
+                  onClick={handleNavExpense}
+                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 ${
+                    (currentView === View.NEW_TRANSACTION && initialTransactionType === TransactionType.EXPENSE)
+                      ? 'bg-rose-500/20 text-rose-400 scale-105 border border-rose-500/30' 
+                      : 'text-slate-500 hover:text-rose-400 hover:bg-white/5'
+                  }`}
+                >
+                  <ArrowUpRight size={22} strokeWidth={2.5} />
+                </button>
+
+                {/* 5. History */}
+                <button
+                  onClick={handleNavHistory}
+                  className={`flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 ${
                     currentView === View.HISTORY 
                       ? 'text-white scale-110' 
                       : 'text-slate-500 hover:text-slate-300'
                   }`}
                 >
-                  <History size={26} strokeWidth={currentView === View.HISTORY ? 2.5 : 2} />
-                  {currentView === View.HISTORY && <span className="absolute -bottom-2 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
+                  <History size={24} strokeWidth={currentView === View.HISTORY ? 2.5 : 2} />
+                  {currentView === View.HISTORY && <span className="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full animate-pulse" />}
                 </button>
+
               </div>
             </nav>
           </div>
