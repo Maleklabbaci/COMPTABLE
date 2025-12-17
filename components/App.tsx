@@ -46,15 +46,13 @@ const App: React.FC = () => {
     setTransactions(loadedTransactions);
 
     // 2. Manage Splash Screen Logic
-    // Start fading out after 2 seconds
     const fadeTimer = setTimeout(() => {
       setSplashFading(true);
     }, 2000);
 
-    // Remove completely after fade transition (2s + 0.7s)
     const removeTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 2700);
+    }, 2500);
 
     return () => {
       clearTimeout(fadeTimer);
@@ -100,33 +98,26 @@ const App: React.FC = () => {
 
   return (
     <>
-      {/* Splash Screen Overlay - Clickable to dismiss as failsafe */}
+      {/* Splash Screen Overlay */}
       {showSplash && (
         <div 
           onClick={handleSplashClick}
-          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out cursor-pointer ${
+          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-500 ease-out cursor-pointer ${
             splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
           <div className="flex flex-col items-center p-6 text-center">
-            {/* Logo Icon */}
             <div className="w-24 h-24 bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20 mb-6 rotate-3">
                <Eye size={48} className="text-white" strokeWidth={2} />
             </div>
-            
-            {/* Brand Name */}
             <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-2 text-center leading-none">
               IVISION <span className="text-blue-600 block md:inline">AGENCY</span>
             </h1>
-            
-            {/* Simple Loading Indicator */}
             <div className="mt-8 flex gap-3">
               <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
               <span className="w-3 h-3 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
               <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
             </div>
-            
-            {/* Helper Text for manual dismiss */}
             <p className="absolute bottom-10 text-slate-400 text-xs font-medium uppercase tracking-widest animate-pulse">
               Touchez pour démarrer
             </p>
@@ -134,8 +125,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Application */}
-      <div className="min-h-screen bg-[#F2F4F8] flex flex-col md:flex-row font-sans text-slate-900 pb-24 md:pb-0">
+      {/* Main Application - Fixed Layout structure to avoid white screens */}
+      <div className="min-h-screen bg-[#F2F4F8] flex flex-col md:flex-row font-sans text-slate-900 pb-28 md:pb-0">
         
         {/* Toast Notification Layer */}
         {notification && (
@@ -173,11 +164,6 @@ const App: React.FC = () => {
                   : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
               }`}
             >
-              {/* Active Glow Effect */}
-              {currentView === View.NEW_TRANSACTION && (
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-              )}
-
               <div className="flex items-center gap-4 relative z-10">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
                   currentView === View.NEW_TRANSACTION ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-indigo-400 group-hover:text-white group-hover:bg-indigo-500/20'
@@ -205,11 +191,6 @@ const App: React.FC = () => {
                   : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
               }`}
             >
-              {/* Active Glow Effect */}
-              {currentView === View.DASHBOARD && (
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-              )}
-
               <div className="flex items-center gap-4 relative z-10">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
                   currentView === View.DASHBOARD ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-slate-400 group-hover:text-white group-hover:bg-indigo-500/20'
@@ -237,11 +218,6 @@ const App: React.FC = () => {
                   : 'bg-[#1E293B] border-white/5 hover:border-white/10 hover:bg-[#273548]'
               }`}
             >
-              {/* Active Glow Effect */}
-              {currentView === View.HISTORY && (
-                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
-              )}
-
               <div className="flex items-center gap-4 relative z-10">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
                   currentView === View.HISTORY ? 'bg-white/20 text-white shadow-inner' : 'bg-[#0F172A] text-slate-400 group-hover:text-white group-hover:bg-indigo-500/20'
@@ -260,54 +236,35 @@ const App: React.FC = () => {
               </div>
             </button>
           </nav>
-
-          <div className="p-6">
-            <div className="bg-[#1E293B] rounded-2xl p-4 border border-white/5 flex items-center gap-3 shadow-lg">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                IV
-              </div>
-              <div>
-                <div className="text-sm font-bold text-white">Agence Ivision</div>
-                <div className="text-xs text-indigo-400 font-medium">Mode Comptable</div>
-              </div>
-            </div>
-          </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-6xl mx-auto h-screen relative scroll-smooth">
+        {/* Main Content - Simplified structure for reliability */}
+        <main className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 relative">
           
           {/* Mobile Top Header - Sticky */}
-          <header className="md:hidden flex justify-between items-center sticky top-0 pt-4 pb-4 px-1 z-30 transition-all bg-[#F2F4F8]/95 backdrop-blur-xl -mx-4 px-5 border-b border-slate-200/50">
-            <div className="relative flex items-center gap-3 z-10">
-               {/* Logo Icon Box */}
+          <header className="md:hidden flex justify-between items-center sticky top-0 pt-2 pb-4 z-30 bg-[#F2F4F8]/95 backdrop-blur-xl -mx-4 px-5 border-b border-slate-200/50 mb-6">
+            <div className="relative flex items-center gap-3">
               <div className="h-[2.8rem] w-[2.8rem] bg-[#0F172A] rounded-[0.8rem] flex items-center justify-center text-white shadow-lg shadow-slate-200">
                  <Eye size={22} strokeWidth={2.5} />
               </div>
-              
-               {/* Text Brand */}
               <div className="flex flex-col justify-center gap-[2px]">
                  <h2 className="text-[1.35rem] font-black text-[#0F172A] tracking-tight leading-none">IVISION</h2>
                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-[0.25em] leading-none ml-0.5">BOOKS</span>
               </div>
             </div>
-            
-            <div className="relative flex items-center gap-2 z-10">
-              {/* Profile Avatar */}
-              <div className="h-[2.6rem] w-[2.6rem] rounded-full bg-slate-200 border-[3px] border-white shadow-sm overflow-hidden">
-                 <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Profile" className="w-full h-full object-cover" />
-              </div>
+            <div className="h-[2.6rem] w-[2.6rem] rounded-full bg-slate-200 border-[3px] border-white shadow-sm overflow-hidden">
+               <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Profile" className="w-full h-full object-cover" />
             </div>
           </header>
 
           {/* Dynamic Content */}
-          <div className="animate-fade-in h-full flex flex-col relative z-0">
+          <div className="h-full flex flex-col relative z-0">
             {currentView === View.NEW_TRANSACTION && (
-              <div className="max-w-2xl mx-auto w-full h-full">
+              <div className="max-w-2xl mx-auto w-full">
                 <div className="hidden md:flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Paiement</h2>
-                    <p className="text-slate-500 mt-2 font-medium">Enregistrez une nouvelle transaction pour l'agence.</p>
+                    <p className="text-slate-500 mt-2 font-medium">Enregistrez une nouvelle transaction.</p>
                   </div>
                   <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-lg shadow-slate-200 text-indigo-600">
                     <PlusCircle size={32} />
@@ -318,7 +275,7 @@ const App: React.FC = () => {
             )}
 
             {currentView === View.DASHBOARD && (
-              <div className="pb-20 max-w-5xl mx-auto">
+              <div className="pb-8 max-w-5xl mx-auto">
                 <div className="hidden md:flex mb-8 justify-between items-center">
                   <div>
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Tableau de Bord</h2>
@@ -345,7 +302,7 @@ const App: React.FC = () => {
             )}
 
             {currentView === View.HISTORY && (
-              <div className="pb-20 max-w-4xl mx-auto">
+              <div className="pb-8 max-w-4xl mx-auto">
                 <div className="hidden md:flex mb-8 justify-between items-center">
                    <div>
                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Historique</h2>
@@ -353,7 +310,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Search Bar - Sticky on Mobile */}
                 <div className="sticky md:static top-[4.5rem] md:top-0 z-20 bg-[#F2F4F8] md:bg-transparent pb-4 pt-2 md:py-0 -mx-4 px-4 md:mx-0 md:px-0 mb-4 md:mb-6">
                    <div className="relative">
                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">

@@ -54,22 +54,13 @@
         }
       }
 
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      
-      /* Use 'both' to handle start/end states via keyframes instead of hiding element by default */
+      /* Safer animation classes - default fill mode 'both' but ensure base visibility isn't compromised if animation fails */
       .animate-slide-up {
-        animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
       }
 
       .animate-slide-down {
         animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-      }
-
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out both;
       }
     </style>
   <script type="importmap">

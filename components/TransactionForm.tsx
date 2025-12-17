@@ -4,7 +4,7 @@ import {
   ArrowLeft, Check, ChevronRight,
   Palette, Briefcase, 
   Monitor, Cpu, Home, Megaphone, Users, Package,
-  Wallet, ShoppingBag, Video, ClipboardCheck, Globe, Target,
+  Video, ClipboardCheck, Globe, Target,
   X, Plus, Minus
 } from 'lucide-react';
 
@@ -19,10 +19,11 @@ interface TransactionFormProps {
   onTransactionAdded: (t: Transaction) => void;
 }
 
-type Step = 'TYPE' | 'SELECTION' | 'DETAILS';
+type Step = 'SELECTION' | 'DETAILS';
 
 const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded }) => {
-  const [step, setStep] = useState<Step>('TYPE');
+  // Default to SELECTION step and INCOME type for immediate access
+  const [step, setStep] = useState<Step>('SELECTION');
   const [type, setType] = useState<TransactionType>(TransactionType.INCOME);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   
@@ -32,16 +33,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded })
   const [description, setDescription] = useState('');
 
   const resetForm = () => {
-    setStep('TYPE');
+    setStep('SELECTION');
     setSelectedItem(null);
     setAmount('');
     setClientName('');
     setDescription('');
-  };
-
-  const handleTypeSelect = (selectedType: TransactionType) => {
-    setType(selectedType);
-    setStep('SELECTION');
+    // Reset to Income defaults as it's the primary use case
+    setType(TransactionType.INCOME);
   };
 
   const handleItemSelect = (item: any) => {
@@ -85,68 +83,35 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded })
     return <Icon className={className} />;
   };
 
-  // --- STEP 1: SELECT TYPE (Modern Big Cards) ---
-  if (step === 'TYPE') {
-    return (
-      <div className="flex flex-col gap-4 h-full pt-2 animate-slide-up" style={{ animationDelay: '0ms' }}>
-        <button
-          onClick={() => handleTypeSelect(TransactionType.INCOME)}
-          className="group relative flex-1 overflow-hidden rounded-[2.5rem] bg-slate-900 text-white shadow-2xl shadow-slate-200 active:scale-[0.98] transition-all duration-300 min-h-[200px]"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-900 opacity-90 group-active:opacity-100 transition-opacity duration-500" />
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-          
-          <div className="relative z-10 h-full flex flex-col items-center justify-center gap-5 p-8">
-            <div className="p-6 bg-white/10 backdrop-blur-md rounded-full shadow-inner ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300">
-              <Wallet size={48} className="text-white drop-shadow-md" strokeWidth={1.5} />
-            </div>
-            <div className="text-center">
-              <h3 className="text-3xl font-bold tracking-tight">Encaissement</h3>
-              <p className="text-emerald-100 font-medium mt-2 tracking-wide text-sm opacity-90">Client & Services</p>
-            </div>
-          </div>
-        </button>
-
-        <button
-          onClick={() => handleTypeSelect(TransactionType.EXPENSE)}
-          className="group relative flex-1 overflow-hidden rounded-[2.5rem] bg-slate-900 text-white shadow-2xl shadow-slate-200 active:scale-[0.98] transition-all duration-300 min-h-[200px]"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-500 to-rose-900 opacity-90 group-active:opacity-100 transition-opacity duration-500" />
-          <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-          
-          <div className="relative z-10 h-full flex flex-col items-center justify-center gap-5 p-8">
-            <div className="p-6 bg-white/10 backdrop-blur-md rounded-full shadow-inner ring-1 ring-white/20 group-hover:scale-110 transition-transform duration-300">
-              <ShoppingBag size={48} className="text-white drop-shadow-md" strokeWidth={1.5} />
-            </div>
-            <div className="text-center">
-              <h3 className="text-3xl font-bold tracking-tight">Dépense</h3>
-              <p className="text-rose-100 font-medium mt-2 tracking-wide text-sm opacity-90">Achats & Frais</p>
-            </div>
-          </div>
-        </button>
-      </div>
-    );
-  }
-
-  // --- STEP 2: SELECT ITEM (Premium Column Style) ---
+  // --- STEP 1: SELECT ITEM (Direct Access) ---
   if (step === 'SELECTION') {
     const items = type === TransactionType.INCOME ? SERVICES : EXPENSE_CATEGORIES;
     const isIncome = type === TransactionType.INCOME;
 
     return (
       <div className="flex flex-col h-full bg-[#F2F4F8] md:rounded-3xl animate-slide-up">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 px-1">
-          <button 
-            onClick={() => setStep('TYPE')}
-            className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center hover:bg-slate-50 active:scale-95 transition-all"
+        {/* Toggle Switcher Header */}
+        <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-100 flex gap-2 mb-6">
+          <button
+            onClick={() => setType(TransactionType.INCOME)}
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              type === TransactionType.INCOME 
+                ? 'bg-slate-900 text-white shadow-md' 
+                : 'text-slate-500 hover:bg-slate-50'
+            }`}
           >
-            <ArrowLeft size={20} className="text-slate-800" />
+            Encaissement
           </button>
-          <span className="font-extrabold text-lg text-slate-800 tracking-tight">
-            {isIncome ? 'Choisir un Service' : 'Type de Dépense'}
-          </span>
-          <div className="w-10" />
+          <button
+            onClick={() => setType(TransactionType.EXPENSE)}
+            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              type === TransactionType.EXPENSE 
+                ? 'bg-slate-900 text-white shadow-md' 
+                : 'text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            Dépense
+          </button>
         </div>
 
         {/* Premium List */}
@@ -172,6 +137,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded })
                 <div className="font-bold text-slate-800 text-base leading-tight">
                   {item.name}
                 </div>
+                {isIncome && (item as any).price && (
+                   <div className="text-emerald-600/70 text-xs font-bold mt-1">
+                      {(item as any).price.toLocaleString('fr-DZ')} DA
+                   </div>
+                )}
               </div>
 
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -188,7 +158,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onTransactionAdded })
     );
   }
 
-  // --- STEP 3: DETAILS (Inline Form) ---
+  // --- STEP 2: DETAILS (Inline Form) ---
   const isIncome = type === TransactionType.INCOME;
   const ThemeColor = isIncome ? 'text-emerald-600' : 'text-rose-600';
   const BgTheme = isIncome ? 'bg-emerald-600' : 'bg-rose-600';
