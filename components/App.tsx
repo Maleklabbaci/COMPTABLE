@@ -25,10 +25,6 @@ const App: React.FC = () => {
   const [notification, setNotification] = useState<NotificationState>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(true);
 
-  // Splash Screen State
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashFading, setSplashFading] = useState(false);
-
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -42,30 +38,10 @@ const App: React.FC = () => {
 
   // Initial load
   useEffect(() => {
-    // 1. Load Transactions
+    // Load Transactions
     const loadedTransactions = getTransactions();
     setTransactions(loadedTransactions);
-
-    // 2. Manage Splash Screen Logic
-    const fadeTimer = setTimeout(() => {
-      setSplashFading(true);
-    }, 2000);
-
-    const removeTimer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
-
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(removeTimer);
-    };
   }, []);
-
-  // Failsafe: manual dismiss
-  const handleSplashClick = () => {
-    setSplashFading(true);
-    setTimeout(() => setShowSplash(false), 300);
-  };
 
   const handleTransactionAdded = async (t: Transaction) => {
     // 1. Save Transaction locally
@@ -118,34 +94,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      {/* Splash Screen Overlay */}
-      {showSplash && (
-        <div 
-          onClick={handleSplashClick}
-          className={`fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center transition-opacity duration-500 ease-out cursor-pointer ${
-            splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
-        >
-          <div className="flex flex-col items-center p-6 text-center">
-            <div className="w-24 h-24 bg-slate-900 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-blue-900/20 mb-6 rotate-3">
-               <Eye size={48} className="text-white" strokeWidth={2} />
-            </div>
-            <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter mb-2 text-center leading-none">
-              IVISION <span className="text-blue-600 block md:inline">AGENCY</span>
-            </h1>
-            <div className="mt-8 flex gap-3">
-              <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-              <span className="w-3 h-3 bg-slate-900 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-              <span className="w-3 h-3 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-            </div>
-            <p className="absolute bottom-10 text-slate-400 text-xs font-medium uppercase tracking-widest animate-pulse">
-              Touchez pour démarrer
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Main Application - Fixed Layout structure to avoid white screens */}
+      {/* Main Application - Interface directe */}
       <div className="min-h-screen bg-[#F2F4F8] flex flex-col md:flex-row font-sans text-slate-900 pb-28 md:pb-0">
         
         {/* Toast Notification Layer */}
@@ -258,7 +207,7 @@ const App: React.FC = () => {
           </nav>
         </aside>
 
-        {/* Main Content - Simplified for robust mobile scrolling */}
+        {/* Main Content */}
         <main className="flex-1 w-full max-w-6xl mx-auto p-4 md:p-8 relative">
           
           {/* Mobile Top Header */}
